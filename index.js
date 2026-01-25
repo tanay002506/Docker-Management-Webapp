@@ -1,11 +1,31 @@
-const express = require('express');
+const express = require("express");
+const cors = require("cors");
+
 const app = express();
+const PORT = 3000;
 
-app.get('/', (req,res)=>{
-    res.sendFile(__dirname+'/index.html');
+app.use(cors());
+app.use(express.json());
+
+app.get("/", (req,res) => {
+    res.sendFile(__dirname+"/index.html")
 })
+app.post("/launch-container", (req, res) => {
+    const { osImage, name } = req.body;
 
-app.listen(3000,(req,res)=>{
-    console.log('server started at port 3000');
+    console.log("Received from frontend:");
+    console.log("OS Image:", osImage);
+    console.log("Container Name:", name);
+
+    // Later you can run:
+    // docker run -d --name name osImage
+
+    res.json({
+        success: true,
+        message: `Container '${name}' with image '${osImage}' received`
+    });
 });
 
+app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+});
