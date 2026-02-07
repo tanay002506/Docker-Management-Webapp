@@ -85,10 +85,12 @@
             />
 
             <button id="launchBtn">Click to Launch Container</button>
+            
         </div>
 
         <div class="running_images">
-            <button>Show Running Images</button>
+            <button id="showRunningImages">Show Running Images</button>
+            <button id="showAllRunningImages">Show All Running Images</button>
         </div>
     </div>
 
@@ -121,6 +123,32 @@
             .catch(err=>{
                 console.log(err);
             })
+        });
+
+        document.getElementById("showRunningImages").addEventListener("click", () => {
+            fetch("/show_running_images")
+                .then(res=>res.json())
+                .then(data=>{
+                    console.log(data);
+                    alert(JSON.stringify(data, null, 2));
+                })
+                .catch(err=>{
+                    console.error(err);
+                })
+                
+        });
+
+         document.getElementById("showAllRunningImages").addEventListener("click", () => {
+            fetch("/show_all_containers")
+                .then(res=>res.json())
+                .then(data=>{
+                    console.log(data);
+                    alert(JSON.stringify(data, null, 2));
+                })
+                .catch(err=>{
+                    console.error(err);
+                })
+                
         });
     </script>
 </body>
