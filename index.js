@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const { exec } = require("child_process");
-const { stderr } = require("process");
+const { stderr, stdout } = require("process");
 
 
 const app = express();
@@ -13,21 +13,33 @@ app.use(express.json());
 app.get("/", (req,res) => {
     res.sendFile(__dirname+"/index.html")
 })
+
 app.post("/launch-container", (req, res) => {
     const { osImage, name } = req.body;
 
-    console.log("Received from frontend:");
-    console.log("OS Image:", osImage);
-    console.log("Container Name:", name);
+    exec(
+        `docker run -d --name ${name} ${osImage}`, (error, stdout, stderr)=>{
+            if(error){
+                return res.status(500).json({
+                    success:false,
+                    error:error.message
+                });
+            }
 
-    // Later you can run:
-    // docker run -d --name name osImage
 
-    res.json({
-        success: true,
-        message: `Container '${name}' with image '${osImage}' received`
-    });
-});
+            res.json({
+                success: true,
+                message:"Container started sucessfully",
+                container: {
+                    name: name,
+                    image: osImage,
+                    status: "running"
+                },
+            });
+        }
+    )
+
+})   
 
 app.get("/show_running_images", (req,res)=>{
     exec(
@@ -36,15 +48,15 @@ app.get("/show_running_images", (req,res)=>{
 
             if(error){
                 return res.status(500).json({
-                    sucess:false,
+                    success:false,
                     error:error.message
                 });
             }
 
             if(!stdout.trim()) {
                 return res.json({
-                    sucess:true,
-                    runnning:[]
+                    success:true,
+                    running:[]
                 });
             }
 
@@ -68,7 +80,7 @@ app.get("/show_running_images", (req,res)=>{
 
 app.get("/show_all_containers",(req,res)=>{
     exec(
-        'docker ps -a --format "{{.Names}}|{{.Image}}|{{.Status}}"',
+        'docker ps -a --format "{{.Names}} | {{.Image}} | {{.Status}}"',
         (error,stdout, stderr)=>{
 
             if(error){
@@ -80,8 +92,8 @@ app.get("/show_all_containers",(req,res)=>{
 
             if(!stdout.trim()) {
                 return res.json({
-                    sucess:true,
-                    runnning:[]
+                    success:true,
+                    running:[]
                 });
             }
 
@@ -102,8 +114,39 @@ app.get("/show_all_containers",(req,res)=>{
 
         }
     )
-})
+});
+app.get("/show_available_images", (req,res)=>{
+    exec(`docker images --format "{{.Repository}} |  {{.Size}}"`, 
+        (error, stdout, stderr)=>{
+            if(error){
+                return res.status(500).json({
+                    success:false,
+                    error:error.message
+                });
+            }
+            
+            if(!stdout.trim()) {
+                return res.json({
+                    success:true,
+                    running:[]
+                });
+            }
 
+            const all_images =stdout
+                .trim()
+                .split("\n")
+                .map(line =>{
+
+                    const[image, size] = line.split("|");
+                    return{ image, size };
+                })
+            
+            res.json({
+                success:true,
+                available:all_images
+            })
+    })
+})
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });

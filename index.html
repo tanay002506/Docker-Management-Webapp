@@ -36,6 +36,9 @@
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
+        .running_images button{
+            margin-bottom: 20px;
+        }
 
         select, input {
             padding: 10px 14px;
@@ -72,10 +75,10 @@
         <div class="image_selection">
             <select id="os">
                 <option value="">-- Select an option --</option>
-                <option value="ubuntu_image">Ubuntu</option>
-                <option value="debian_image">Debian</option>
-                <option value="centos_image">CentOS</option>
-                <option value="alpine_image">Alpine</option>
+                <option value="ubuntu">Ubuntu</option>
+                <option value="debian">Debian</option>
+                <option value="centos">CentOS</option>
+                <option value="alpine">Alpine</option>
             </select>
 
             <input
@@ -90,7 +93,8 @@
 
         <div class="running_images">
             <button id="showRunningImages">Show Running Images</button>
-            <button id="showAllRunningImages">Show All Running Images</button>
+            <button id="showAllRunningImages">Show All Created Containers</button>
+            <button id="showAvailableImages">Show All Availabe Images</button>
         </div>
     </div>
 
@@ -118,7 +122,14 @@
             })
             .then(res=>res.json())
             .then(data=>{
-                alert(data.message);
+                console.log("Response from server :", data);
+                alert(
+                    `Message: ${data.message}\n` +
+                    `Name: ${data.container.name}\n` +
+                    `Image: ${data.container.image}\n` +
+                    `Status: ${data.container.status}`
+                );
+
             })
             .catch(err=>{
                 console.log(err);
@@ -140,6 +151,18 @@
 
          document.getElementById("showAllRunningImages").addEventListener("click", () => {
             fetch("/show_all_containers")
+                .then(res=>res.json())
+                .then(data=>{
+                    console.log(data);
+                    alert(JSON.stringify(data, null, 2));
+                })
+                .catch(err=>{
+                    console.error(err);
+                })
+                
+        });
+        document.getElementById("showAvailableImages").addEventListener("click", () => {
+            fetch("/show_available_images")
                 .then(res=>res.json())
                 .then(data=>{
                     console.log(data);
