@@ -77,7 +77,7 @@
                 <option value="">-- Select an option --</option>
                 <option value="ubuntu">Ubuntu</option>
                 <option value="debian">Debian</option>
-                <option value="centos">CentOS</option>
+                <option value="quay.io/centos/centos">CentOS</option>
                 <option value="alpine">Alpine</option>
             </select>
 
@@ -92,14 +92,75 @@
         </div>
 
         <div class="running_images">
-            <button id="showRunningImages">Show Running Images</button>
+            <button id="showRunningImages">Show Running Conatiners</button>
             <button id="showAllRunningImages">Show All Created Containers</button>
             <button id="showAvailableImages">Show All Availabe Images</button>
         </div>
+
+    </div>
+
+    <div style="margin:40px;">
+        <table id="resultTable" border="1" cellpadding="10" cellspacing="0" width="100%">
+            <thead>
+                <tr id="tableHead"></tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
     </div>
 
     <!-- JS MUST BE HERE -->
     <script>
+        function renderTable(headers, rows) {
+
+            const tableBody = document.getElementById("tableBody");
+            const tableHead = document.getElementById("tableHead");
+
+            tableBody.innerHTML = "";
+            tableHead.innerHTML = "";
+            
+                // headers
+            headers.forEach(h => {
+                const th = document.createElement("th");
+                th.innerText = h.label;
+                tableHead.appendChild(th);
+            });
+
+                // rows
+            rows.forEach(row => {
+                const tr = document.createElement("tr");
+
+                headers.forEach(h => {
+                    const td = document.createElement("td");
+
+                    //action column (button generation)
+
+                    if(h.type =="action"){
+                        h.actions.forEach(action=>{
+                            const btn =  document.createElement("button");
+                                btn.innerText = action.label;
+                                btn.style.marginRight = "6px" ;
+                                btn.style.width = "auto" ;
+
+                                btn.addEventListener("click", ()=>{
+                                    action.onClick(row);
+                                });
+
+                                td.appendChild(btn);
+                            })
+                    }
+
+                    else {
+                        td.innerText = row[h.key] || "-";
+                    }
+
+                    tr.appendChild(td);
+                });
+
+                tableBody.appendChild(tr);
+            });
+        }
+
+
         document.getElementById("launchBtn").addEventListener("click", () => {
             const os = document.getElementById("os").value;
             const containerName = document.getElementById("containerName").value;
@@ -140,8 +201,15 @@
             fetch("/show_running_images")
                 .then(res=>res.json())
                 .then(data=>{
-                    console.log(data);
-                    alert(JSON.stringify(data, null, 2));
+                    renderTable(
+                        [
+                            {label: "Name", key:"name"},
+                            {label: "Image", key:"image"},
+                            {label: "Status", key:"status"},
+                        ],
+                        data.running
+                    );
+
                 })
                 .catch(err=>{
                     console.error(err);
@@ -153,8 +221,16 @@
             fetch("/show_all_containers")
                 .then(res=>res.json())
                 .then(data=>{
-                    console.log(data);
-                    alert(JSON.stringify(data, null, 2));
+                    renderTable(
+                        [
+                            {label: "Name", key:"name"},
+                            {label: "Image", key:"image"},
+                            {label: "Status", key:"status"},
+            
+                        ],
+                        data.running
+                    );
+
                 })
                 .catch(err=>{
                     console.error(err);
@@ -165,8 +241,14 @@
             fetch("/show_available_images")
                 .then(res=>res.json())
                 .then(data=>{
-                    console.log(data);
-                    alert(JSON.stringify(data, null, 2));
+                    renderTable(
+                        [
+                            {label: "Image", key:"image"},
+                            {label: "Size", key:"size"},
+                        ],
+                        data.available
+                    );
+
                 })
                 .catch(err=>{
                     console.error(err);

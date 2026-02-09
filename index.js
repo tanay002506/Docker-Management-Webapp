@@ -80,7 +80,7 @@ app.get("/show_running_images", (req,res)=>{
 
 app.get("/show_all_containers",(req,res)=>{
     exec(
-        'docker ps -a --format "{{.Names}} | {{.Image}} | {{.Status}}"',
+        'docker ps -a --format "{{.Names}}|{{.Image}}|{{.Status}}"',
         (error,stdout, stderr)=>{
 
             if(error){
@@ -147,6 +147,8 @@ app.get("/show_available_images", (req,res)=>{
             })
     })
 })
+
+
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
