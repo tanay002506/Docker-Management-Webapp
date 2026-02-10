@@ -67,6 +67,14 @@ function createButton(label, className, action, row) {
     btn.dataset.name=row.name;
     btn.dataset.image=row.image;
 
+    //disable delete button if the container is already up
+    if (action === "delete" && row.status?.startsWith("Up")) {
+        btn.disabled = true;
+        btn.title = "Stop the container before deleting";
+        btn.style.opacity = "0.6";
+        btn.style.cursor = "not-allowed";
+    }
+
     btn.addEventListener("click", handleActionClick);
     return btn;
 }
@@ -113,12 +121,40 @@ function handleActionClick(e) {
     }
 
     if (action === "delete") {
+
+        const confirmDelete = confirm(
+            `Are you sure you want to delete container "${name}"?\n\nThis action cannot be undone`
+        );
+
+        if(!confirmDelete)return;
+
+        
+
+        // safe to delete
         fetch("/delete_container", {
             method: "DELETE",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name })
+        })
+        .then(async res=>{
+            const data = await res.json();
+
+            if(!res.ok){
+                alert(data.error || "Failed to delete container");
+                return;
+            }
+
+            document.getElementById("showAllRunningImages").click();
+        }) 
+        
+        .catch(err => {
+            console.error(err);
+            alert("Server error");
         });
+            
+            
     }
+
 }
 
 

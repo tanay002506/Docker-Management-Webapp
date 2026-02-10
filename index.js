@@ -194,24 +194,64 @@ app.post("/stop_container", (req, res) => {
 });
 
 
+//check for running container 
+
+app.get("/is_container_running/:name", (req, res) => {
+    const { name } = req.params;
+
+    exec(
+        `docker inspect -f "{{.State.Running}}" ${name}`,
+        (error, stdout) => {
+            if (error) {
+                return res.json({
+                    success: true,
+                    running: false
+                });
+            }
+
+            res.json({
+                success: true,
+                running: stdout.trim() === "true"
+            });
+        }
+    );
+});
+
+
+
 //delete container from output table 
 
 app.delete("/delete_container", (req, res) => {
     const { name } = req.body;
 
-    exec(`docker rm ${name}`, (error) => {
-        if (error) {
-            return res.status(500).json({
-                success: false,
-                error: error.message
-            });
-        }
+        exec(
+            `docker inspect -f "{{.State.Running}}" ${name}`,
+            (err, stdout) => {
+                if (!err && stdout.trim() === "true") {
+                    return res.status(400).json({
+                        success: false,
+                        error: "Container is running. Stop it first."
+                    });
+                }
 
-        res.json({
-            success: true,
-            message: `Container ${name} deleted`
-        });
-    });
+
+                exec(`docker rm ${name}`, (error) => {
+                    if (error) {
+                        return res.status(500).json({
+                            success: false,
+                            error: error.message
+                        });
+                    }
+                
+                    res.json({
+                        success: true,
+                        message: `Container ${name} deleted`
+                    });
+                });
+            
+            }
+        )
+
 });
 
 
