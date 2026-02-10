@@ -21,7 +21,7 @@ app.post("/launch-container", (req, res) => {
     const { osImage, name } = req.body;
 
     exec(
-        `docker run -d --name ${name} ${osImage}`, (error, stdout, stderr)=>{
+        `docker run -d --name ${name} ${osImage} sleep infinity`, (error, stdout, stderr)=>{
             if(error){
                 return res.status(500).json({
                     success:false,
@@ -150,6 +150,70 @@ app.get("/show_available_images", (req,res)=>{
             })
     })
 })
+
+
+//start container from output row
+
+app.post("/start_container", (req, res) => {
+    const { name } = req.body;
+
+    exec(`docker start ${name}`, (error, stdout, stderr) => {
+        if (error) {
+            return res.status(500).json({
+                success: false,
+                error: stderr || error.message
+            });
+        }
+
+        res.json({
+            success: true,
+            message: `Container ${name} started`
+        });
+    });
+});
+
+
+//stop running container from output table
+
+app.post("/stop_container", (req, res) => {
+    const { name } = req.body;
+
+    exec(`docker stop ${name}`, (error) => {
+        if (error) {
+            return res.status(500).json({
+                success: false,
+                error: error.message
+            });
+        }
+
+        res.json({
+            success: true,
+            message: `Container ${name} stopped`
+        });
+    });
+});
+
+
+//delete container from output table 
+
+app.delete("/delete_container", (req, res) => {
+    const { name } = req.body;
+
+    exec(`docker rm ${name}`, (error) => {
+        if (error) {
+            return res.status(500).json({
+                success: false,
+                error: error.message
+            });
+        }
+
+        res.json({
+            success: true,
+            message: `Container ${name} deleted`
+        });
+    });
+});
+
 
 
 app.listen(PORT, () => {

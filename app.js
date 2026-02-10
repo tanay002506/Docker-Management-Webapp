@@ -36,16 +36,16 @@ function renderTable(headers, rows, mode) {
             const actionTd =document.createElement("td");
             if(mode=="running"){
                 actionTd.appendChild(
-                    createButton("Stop", "btn btn-stop",()=>
+                    createButton("Stop", "btn btn-stop","stop",row,()=>
                         console.log("Stop:",row)
                     )
                 );
             }
             if (mode=="all"){
                 actionTd.append(
-                    createButton("Launch", "btn btn-launch", ()=> console.log("Launch", row)),
-                    createButton("Stop", "btn btn-stop", ()=> console.log("Stop", row)),
-                    createButton("Delete", "btn btn-delete", ()=> console.log("Delete", row))
+                    createButton("Launch", "btn btn-launch","launch",row, ()=> console.log("Launch", row)),
+                    createButton("Stop", "btn btn-stop","stop",row, ()=> console.log("Stop", row)),
+                    createButton("Delete", "btn btn-delete","delete",row, ()=> console.log("Delete", row))
                 );
             }
             tr.appendChild(actionTd);
@@ -57,14 +57,70 @@ function renderTable(headers, rows, mode) {
 
 //function to create button in each row of the output table 
 
-function createButton(label, className, onClick) {
+function createButton(label, className, action, row) {
     const btn = document.createElement("button");
     btn.textContent = label;
     btn.className = className;
     btn.style.width = "auto";
-    btn.addEventListener("click", onClick);
+
+    btn.dataset.action =action;
+    btn.dataset.name=row.name;
+    btn.dataset.image=row.image;
+
+    btn.addEventListener("click", handleActionClick);
     return btn;
 }
+
+
+//function to handle table button action 
+
+function handleActionClick(e) {
+    const btn = e.target;
+
+    const action = btn.dataset.action;
+    const name = btn.dataset.name;
+    const image = btn.dataset.image;
+
+    if (action === "launch") {
+        fetch("/start_container", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, image })
+        })
+        
+    }
+
+    if (action === "stop") {
+        fetch("/stop_container", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (!data.success) {
+                alert(data.error || "Failed to stop container");
+                return;
+            }
+
+            // 🔄 REFRESH TABLE HERE
+            document.getElementById("showAllRunningImages").click();
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Server error");
+        });
+    }
+
+    if (action === "delete") {
+        fetch("/delete_container", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name })
+        });
+    }
+}
+
 
 
 //launch container button
