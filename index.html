@@ -5,65 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Docker Management</title>
 
-    <style>
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            background-color: #f4f6f8;
-            margin: 0;
-            padding: 0;
-        }
+    <link rel="stylesheet" href="style.css">
+    
+    <script src="app.js" defer></script>
 
-        .title {
-            text-align: center;
-            font-size: 28px;
-            font-weight: bold;
-            padding: 20px;
-            background-color: #0db7ed;
-            color: white;
-        }
-
-        .container {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 40px;
-        }
-
-        .image_selection,
-        .running_images {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .running_images button{
-            margin-bottom: 20px;
-        }
-
-        select, input {
-            padding: 10px 14px;
-            font-size: 16px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            width: 200px;
-            margin-bottom: 10px;
-        }
-
-        button {
-            padding: 10px 16px;
-            font-size: 16px;
-            border: none;
-            border-radius: 6px;
-            background-color: #0db7ed;
-            color: white;
-            cursor: pointer;
-            width: 100%;
-        }
-
-        button:hover {
-            background-color: #0aa1d3;
-        }
-    </style>
 </head>
 
 <body>
@@ -101,159 +46,14 @@
 
     <div style="margin:40px;">
         <table id="resultTable" border="1" cellpadding="10" cellspacing="0" width="100%">
-            <thead>
-                <tr id="tableHead"></tr>
-            </thead>
+            <thead id="tableHead"></thead>
             <tbody id="tableBody"></tbody>
         </table>
     </div>
 
     <!-- JS MUST BE HERE -->
     <script>
-        function renderTable(headers, rows) {
-
-            const tableBody = document.getElementById("tableBody");
-            const tableHead = document.getElementById("tableHead");
-
-            tableBody.innerHTML = "";
-            tableHead.innerHTML = "";
-            
-                // headers
-            headers.forEach(h => {
-                const th = document.createElement("th");
-                th.innerText = h.label;
-                tableHead.appendChild(th);
-            });
-
-                // rows
-            rows.forEach(row => {
-                const tr = document.createElement("tr");
-
-                headers.forEach(h => {
-                    const td = document.createElement("td");
-
-                    //action column (button generation)
-
-                    if(h.type =="action"){
-                        h.actions.forEach(action=>{
-                            const btn =  document.createElement("button");
-                                btn.innerText = action.label;
-                                btn.style.marginRight = "6px" ;
-                                btn.style.width = "auto" ;
-
-                                btn.addEventListener("click", ()=>{
-                                    action.onClick(row);
-                                });
-
-                                td.appendChild(btn);
-                            })
-                    }
-
-                    else {
-                        td.innerText = row[h.key] || "-";
-                    }
-
-                    tr.appendChild(td);
-                });
-
-                tableBody.appendChild(tr);
-            });
-        }
 
 
-        document.getElementById("launchBtn").addEventListener("click", () => {
-            const os = document.getElementById("os").value;
-            const containerName = document.getElementById("containerName").value;
-
-            if (!os || !containerName) {
-                alert("Please select OS and enter container name");
-                return;
-            }
-
-            const payload = {
-                osImage: os,
-                name: containerName
-            }
-            fetch("/launch-container",{
-                method:"POST",
-                headers :{
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(payload)
-            })
-            .then(res=>res.json())
-            .then(data=>{
-                console.log("Response from server :", data);
-                alert(
-                    `Message: ${data.message}\n` +
-                    `Name: ${data.container.name}\n` +
-                    `Image: ${data.container.image}\n` +
-                    `Status: ${data.container.status}`
-                );
-
-            })
-            .catch(err=>{
-                console.log(err);
-            })
-        });
-
-        document.getElementById("showRunningImages").addEventListener("click", () => {
-            fetch("/show_running_images")
-                .then(res=>res.json())
-                .then(data=>{
-                    renderTable(
-                        [
-                            {label: "Name", key:"name"},
-                            {label: "Image", key:"image"},
-                            {label: "Status", key:"status"},
-                        ],
-                        data.running
-                    );
-
-                })
-                .catch(err=>{
-                    console.error(err);
-                })
-                
-        });
-
-         document.getElementById("showAllRunningImages").addEventListener("click", () => {
-            fetch("/show_all_containers")
-                .then(res=>res.json())
-                .then(data=>{
-                    renderTable(
-                        [
-                            {label: "Name", key:"name"},
-                            {label: "Image", key:"image"},
-                            {label: "Status", key:"status"},
-            
-                        ],
-                        data.running
-                    );
-
-                })
-                .catch(err=>{
-                    console.error(err);
-                })
-                
-        });
-        document.getElementById("showAvailableImages").addEventListener("click", () => {
-            fetch("/show_available_images")
-                .then(res=>res.json())
-                .then(data=>{
-                    renderTable(
-                        [
-                            {label: "Image", key:"image"},
-                            {label: "Size", key:"size"},
-                        ],
-                        data.available
-                    );
-
-                })
-                .catch(err=>{
-                    console.error(err);
-                })
-                
-        });
     </script>
 </body>
