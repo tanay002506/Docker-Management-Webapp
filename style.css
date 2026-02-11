@@ -68,3 +68,9 @@ button:hover {
 .btn-launch { background: #4caf50; color: white; }
 .btn-stop { background: #ff9800; color: white; }
 .btn-delete { background: #f44336; color: white; }
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+

@@ -20,29 +20,61 @@ app.get("/", (req,res) => {
 app.post("/launch-container", (req, res) => {
     const { osImage, name } = req.body;
 
-    exec(
-        `docker run -d --name ${name} ${osImage} sleep infinity`, (error, stdout, stderr)=>{
-            if(error){
-                return res.status(500).json({
-                    success:false,
-                    error:error.message
-                });
-            }
+    //container name validity check 
+    const nameRegex = /^[a-zA-Z0-9_-]{1,30}$/;
 
+    if (!nameRegex.test(name)) {
+        return res.status(400).json({
+            success: false,
+            error: "Invalid container name"
+        });
+    }
 
-            res.json({
-                success: true,
-                message:"Container started sucessfully",
-                container: {
-                    name: name,
-                    image: osImage,
-                    status: "running"
-                },
+    exec('docker ps -a --format "{{.Names}}"', (err, stdout) => {
+        if (err) {
+            return res.status(500).json({
+                success: false,
+                error: "Failed to check existing containers"
             });
         }
-    )
 
-})   
+        const existingNames = stdout
+            .trim()
+            .split("\n");
+
+        if (existingNames.includes(name)) {
+            return res.status(400).json({
+                success: false,
+                error: "Container already exists"
+            });
+        }
+    
+
+        exec(
+            `docker run -d --name ${name} ${osImage} sleep infinity`, (error, stdout, stderr)=>{
+                if(error){
+                    return res.status(500).json({
+                        success:false,
+                        error:error.message
+                    });
+                }
+
+
+                res.json({
+                    success: true,
+                    message:"Container started sucessfully",
+                    container: {
+                        name: name,
+                        image: osImage,
+                        status: "running"
+                    },
+                });
+            }
+    
+        );
+    });
+
+});   
 
 app.get("/show_running_images", (req,res)=>{
     exec(

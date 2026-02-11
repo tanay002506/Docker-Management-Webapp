@@ -42,9 +42,21 @@ function renderTable(headers, rows, mode) {
                 );
             }
             if (mode=="all"){
+
+                const launchBtn = createButton("Launch", "btn btn-launch", "launch", row);
+                const stopBtn = createButton("Stop", "btn btn-stop","stop",row);
+                
+                if (row.status && row.status.toLowerCase().includes("up")){
+                    launchBtn.disabled = true;
+                };
+
+                if (row.status && row.status.toLowerCase().includes("exited")){
+                    stopBtn.disabled = true;
+                };
+
                 actionTd.append(
-                    createButton("Launch", "btn btn-launch","launch",row, ()=> console.log("Launch", row)),
-                    createButton("Stop", "btn btn-stop","stop",row, ()=> console.log("Stop", row)),
+                    launchBtn,
+                    stopBtn,
                     createButton("Delete", "btn btn-delete","delete",row, ()=> console.log("Delete", row))
                 );
             }
@@ -95,6 +107,20 @@ function handleActionClick(e) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name, image })
         })
+        .then(res => res.json())
+        .then(data => {
+            if (!data.success) {
+                alert(data.error || "Failed to launch container");
+                return;
+            }
+
+            // 🔄 REFRESH TABLE HERE
+            document.getElementById("showRunningImages").click();
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Server error");
+        });
         
     }
 
@@ -162,10 +188,19 @@ function handleActionClick(e) {
 //launch container button
 
 document.getElementById("launchBtn").addEventListener("click", () => {
+    
+
     const os = document.getElementById("os").value;
     const containerName = document.getElementById("containerName").value;
     if (!os || !containerName) {
         alert("Please select OS and enter container name");
+        return;
+    }
+
+    const nameRegex = /^[a-zA-Z0-9_-]{1,30}$/;
+
+    if (!nameRegex.test(containerName)){
+        alert("Invalid container name. \nOnly letters, numbers, '_' and '-' allowed " )
         return;
     }
     const payload = {
@@ -182,6 +217,10 @@ document.getElementById("launchBtn").addEventListener("click", () => {
     .then(res=>res.json())
     .then(data=>{
         console.log("Response from server :", data);
+
+        if(!data.success){
+            alert(data.error || "failed to create container");
+        }
         alert(
             `Message: ${data.message}\n` +
             `Name: ${data.container.name}\n` +
