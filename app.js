@@ -187,7 +187,7 @@ function handleActionClick(e) {
 
 //launch container button
 
-document.getElementById("launchBtn").addEventListener("click", () => {
+document.getElementById("createLaunchBtn").addEventListener("click", () => {
     
 
     const os = document.getElementById("os").value;
