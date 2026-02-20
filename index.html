@@ -16,40 +16,54 @@
         DOCKER MANAGEMENT
     </div>
 
-    <div class="container">
-        <div class="image_selection">
-            <select id="os">
-                <option value="">-- Select an option --</option>
-                <option value="ubuntu">Ubuntu</option>
-                <option value="debian">Debian</option>
-                <option value="quay.io/centos/centos">CentOS</option>
-                <option value="alpine">Alpine</option>
-            </select>
+    <div class="app_layout">
 
-            <input
-                type="text"
-                id="containerName"
-                placeholder="Container Name"
-            />
+        <div class="sidebar">
+            <h3> My Projects</h3>
+            <ul id="projectList">
+            </ul>
+        </div>
 
-            <button id="createLaunchBtn">Click to Create & Launch Container</button>
+        <div class="main_content">
+            <div class="container">
+                <div class="image_selection">
+                    <select id="os">
+                        <option value="">-- Select an option --</option>
+                        <option value="ubuntu">Ubuntu</option>
+                        <option value="debian">Debian</option>
+                        <option value="quay.io/centos/centos">CentOS</option>
+                        <option value="alpine">Alpine</option>
+                    </select>
+
+                    <input
+                        type="text"
+                        id="containerName"
+                        placeholder="Container Name"
+                    />
+
+                    <button id="createLaunchBtn">Click to Create & Launch Container</button>
+
+                </div>
+
+                <div class="running_images">
+                    <button id="showRunningImages">Show Running Conatiners</button>
+                    <button id="showAllRunningImages">Show All Created Containers</button>
+                    <button id="showAvailableImages">Show All Availabe Images</button>
+                </div>
+
+            </div>
+
+            <div style="margin:40px;">
+                <table id="resultTable" border="1" cellpadding="10" cellspacing="0" width="100%">
+                    <thead id="tableHead"></thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
             
         </div>
-
-        <div class="running_images">
-            <button id="showRunningImages">Show Running Conatiners</button>
-            <button id="showAllRunningImages">Show All Created Containers</button>
-            <button id="showAvailableImages">Show All Availabe Images</button>
-        </div>
-
     </div>
 
-    <div style="margin:40px;">
-        <table id="resultTable" border="1" cellpadding="10" cellspacing="0" width="100%">
-            <thead id="tableHead"></thead>
-            <tbody id="tableBody"></tbody>
-        </table>
-    </div>
+    
 
     <!-- JS MUST BE HERE -->
     <script>
